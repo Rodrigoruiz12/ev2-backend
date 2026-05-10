@@ -1,15 +1,16 @@
 version: '3.8'
 
 services:
+  # Base de Datos (MySQL según tus logs)
   db:
-    image: postgres:15-alpine
+    image: mysql:8.0
     container_name: db_backend
+    restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: sistema_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: sistema_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
     networks:
       - backend_net
 
@@ -19,6 +20,13 @@ services:
     container_name: ms_ventas
     depends_on:
       - db
+    # AQUÍ ESTÁ LA SOLUCIÓN: Pasamos las variables que Java está gritando
+    environment:
+      DB_ENDPOINT: db
+      DB_PORT: 3306
+      DB_NAME: sistema_db
+      DB_USER: user
+      DB_PASSWORD: password
     networks:
       - backend_net
 
@@ -28,6 +36,12 @@ services:
     container_name: ms_despachos
     depends_on:
       - db
+    environment:
+      DB_ENDPOINT: db
+      DB_PORT: 3306
+      DB_NAME: sistema_db
+      DB_USER: user
+      DB_PASSWORD: password
     networks:
       - backend_net
 
@@ -36,4 +50,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  mysql_data:
