@@ -1,0 +1,59 @@
+name: Deploy Backend via Bastion
+
+on:
+  push:
+    branches: [ "deploy" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push Ventas
+        uses: docker/build-push-action@v4
+        with:
+          context: ./back-Ventas_SpringBoot/Springboot-API-REST
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ms-ventas:latest
+
+      - name: Build & Push Despachos
+        uses: docker/build-push-action@v4
+        with:
+          context: ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ms-despachos:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH Proxy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          proxy_host: ${{ secrets.FRONTEND_HOST }}
+          proxy_username: ${{ secrets.SERVER_USER }}
+          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p ~/backend
+            cd ~/backend
+            # Instalamos docker-compose si no está (por si acaso)
+            if ! command -v docker-compose &> /dev/null; then
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+            # El compose hay que crearlo o copiarlo. 
+            # Por ahora, GitHub solo entrará a ejecutar comandos.
+            # (Si no has copiado el archivo compose al server, avísame para darte el paso de SCP)
+            docker-compose pull
+            docker-compose up -d --force-recreate
