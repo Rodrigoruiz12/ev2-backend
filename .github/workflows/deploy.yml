@@ -49,6 +49,7 @@ jobs:
           proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "docker-compose.yml"
           target: "/home/ec2-user/backend"
+          debug: true
 
       - name: Deploy via SSH Proxy
         uses: appleboy/ssh-action@v1.0.3
