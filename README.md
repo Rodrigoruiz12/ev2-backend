@@ -1,6 +1,4 @@
-# Innovatech Chile - Backend
-
-Este repositorio contiene la lógica de negocio y la infraestructura de datos para la plataforma de Innovatech Chile. La solución se basa en una arquitectura de microservicios desacoplados para la gestión de **Ventas** y **Despachos**, desarrollados con **Java 17 y Spring Boot**.
+# Evaluacion 2
 
 ## Arquitectura y Tecnologías
 * **Base de Datos:** MySQL 8.0
